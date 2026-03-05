@@ -5,11 +5,12 @@ import (
 )
 
 type Restaurant struct {
-	Name   string `json:"name"`
-	ID     int    `json:"id"`
-	Menu   map[int]*MenuItem
-	Tables map[int]*Table
-	mu     sync.Mutex
+	Name     string `json:"name"`
+	ID       int    `json:"id"`
+	Capacity int    `json:"capacity"`
+	Menu     map[int]*MenuItem
+	Tables   map[int]*Table
+	mu       sync.Mutex
 }
 
 type Table struct {

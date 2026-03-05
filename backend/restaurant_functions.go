@@ -19,7 +19,6 @@ func (r *Restaurant) loadMenu() error {
 		return err
 	}
 
-	//==================================================
 }
 
 func (r *Restaurant) loadTables() {
@@ -46,6 +45,7 @@ func init() {
 			if r, ok := Restaurants[id]; ok {
 				r.Name = list[id].Name
 				r.ID = list[id].ID
+				r.Capacity = list[id].Capacity
 			}
 		}
 	}

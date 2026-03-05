@@ -34,7 +34,6 @@ func (r *Restaurant) loadTables() {
 }
 
 func init() {
-
 	data, err := os.ReadFile("restaurants_data.json")
 	println(err)
 

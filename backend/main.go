@@ -6,13 +6,12 @@ func main() {
 	Restaurants = make(map[int]*Restaurant)
 	err := initRestaurants()
 
-	// Hata kontrolü (Dosya bulunamadıysa burada kalır)
+	// Check (From AI)
 	if err != nil {
 		fmt.Printf("❌ Yükleme Sırasında Hata: %v\n", err)
 		return
 	}
 
-	// Değişkenlerden verileri çekiyoruz
 	resCount := len(Restaurants)
 	tableCount := 0
 	menuCount := 0
@@ -22,7 +21,6 @@ func main() {
 		menuCount += len(r.Menu)
 	}
 
-	// Jilet gibi rapor
 	fmt.Println("==========================================")
 	fmt.Printf("🏠 Aktif Restoran : %d\n", resCount)
 	fmt.Printf("🪑 Toplam Masa    : %d\n", tableCount)

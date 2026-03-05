@@ -48,16 +48,21 @@ func initRestaurants() error {
 	}
 
 	for id, rData := range captured {
-		if r, ok := Restaurants[id]; ok {
-			// **Place restaurant data**
-			r.Name = rData.Name
-			r.ID = rData.ID
-			r.Capacity = rData.Capacity
-
-			// **Load child elements**
-			if err := r.loadTables(); err != nil {
-				return err
+		if _, ok := Restaurants[id]; !ok {
+			Restaurants[id] = &Restaurant{
+				ID:     id,
+				Menu:   make(map[int]*MenuItem), // Menü map'ini başlatmayı unutma!
+				Tables: make(map[int]*Table),
 			}
+		}
+
+		r := Restaurants[id]
+		r.Name = rData.Name
+		r.Capacity = rData.Capacity
+
+		// Masaları yükle
+		if err := r.loadTables(); err != nil {
+			return err
 		}
 	}
 

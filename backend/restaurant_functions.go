@@ -26,64 +26,46 @@ func (r *Restaurant) loadTables() error {
 	return nil
 }
 
-func (r *Restaurant) loadMenu() error {
-	data, err := os.ReadFile("menu.json")
+func initRestaurants() error {
+	resdata, err := os.ReadFile("restaurants_data.json")
 	if err != nil {
 		return err
 	}
+	menudata, err0 := os.ReadFile("menus_data.json")
+	if err0 != nil {
+		return err0
+	}
 
-	var captured map[int]map[int]*MenuItem
-	err1 := json.Unmarshal(data, &captured)
+	var captured map[int]*Restaurant
+	err1 := json.Unmarshal(resdata, &captured)
 	if err1 != nil {
 		return err1
 	}
+	var capturedmenu map[int]map[int]*MenuItem
+	err2 := json.Unmarshal(menudata, &capturedmenu)
+	if err2 != nil {
+		return err2
+	}
 
-	for _, items := range captured {
-		if len(items) > 0 {
-			for itemid, item := range items {
-				if _, ok := r.Menu[itemid]; ok {
-					r.Menu[itemid].ID = itemid
-					r.Menu[itemid].Name = item.Name
-					r.Menu[itemid].Category = item.Category
-					r.Menu[itemid].PrepTime = item.PrepTime
-					r.Menu[itemid].Price = item.Price
-					r.Menu[itemid].Stock = item.Stock
-					r.Menu[itemid].IsActive = item.IsActive
-				}
+	for id, rData := range captured {
+		if r, ok := Restaurants[id]; ok {
+			// **Place restaurant data**
+			r.Name = rData.Name
+			r.ID = rData.ID
+			r.Capacity = rData.Capacity
+
+			// **Load child elements**
+			if err := r.loadTables(); err != nil {
+				return err
 			}
 		}
 	}
-	return nil
-}
 
-func initRestaurants() error {
-	data, err := os.ReadFile("restaurants_data.json")
-	if err != nil {
-		return err
-	}
-
-	var captured map[int][]Restaurant
-	err1 := json.Unmarshal(data, &captured)
-	if err1 != nil {
-		return err1
-	}
-
-	for id, list := range captured {
-		if len(list) > 0 {
-			if r, ok := Restaurants[id]; ok {
-				// **Place restaurant data**
-				r.Name = list[id].Name
-				r.ID = list[id].ID
-				r.Capacity = list[id].Capacity
-
-				// **Load child elements**
-				if err := r.loadTables(); err != nil {
-					return err
-				}
-				if err := r.loadMenu(); err != nil {
-					return err
-				}
-				return nil
+	for resid, items := range capturedmenu {
+		if r, ok := Restaurants[resid]; ok {
+			for itemid, item := range items {
+				item.ID = itemid
+				r.Menu[itemid] = item
 			}
 		}
 	}

@@ -1,6 +1,9 @@
 package main
 
+import "fmt"
+
 func main() {
 	err := initRestaurants()
-	print(err)
+	fmt.Println(err)
+	fmt.Println("Successfully loaded!")
 }

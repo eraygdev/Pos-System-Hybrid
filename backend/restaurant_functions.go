@@ -51,7 +51,7 @@ func initRestaurants() error {
 		if _, ok := Restaurants[id]; !ok {
 			Restaurants[id] = &Restaurant{
 				ID:     id,
-				Menu:   make(map[int]*MenuItem), // Menü map'ini başlatmayı unutma!
+				Menu:   make(map[int]*MenuItem),
 				Tables: make(map[int]*Table),
 			}
 		}
@@ -60,7 +60,6 @@ func initRestaurants() error {
 		r.Name = rData.Name
 		r.Capacity = rData.Capacity
 
-		// Masaları yükle
 		if err := r.loadTables(); err != nil {
 			return err
 		}

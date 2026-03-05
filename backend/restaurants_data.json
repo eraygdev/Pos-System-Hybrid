@@ -2,22 +2,22 @@
   "1001": [
     {
       "name": "One",
-      "id": "1001",
-      "capacity": "30"
+      "id": 1001,
+      "capacity": 30
     }
   ],
   "1002": [
     {
       "name": "Two",
-      "id": "1002",
-      "capacity": "25"
+      "id": 1002,
+      "capacity": 25
     }
   ],
   "3": [
     {
       "name": "Three",
-      "100id": "1003",
-      "capacity": "30"
+      "100id": 1003,
+      "capacity": 30
     }
   ]
 }

@@ -24,6 +24,7 @@ func (r *Restaurant) loadMenu() error {
 func (r *Restaurant) loadTables() {
 	r.Tables = make(map[int]*Table)
 
+	TableAmount := r.Capacity
 	for i := 1; i <= TableAmount; i++ {
 		t := &Table{Number: i}
 		t.resetUncontrolled_unsafe()
@@ -33,6 +34,7 @@ func (r *Restaurant) loadTables() {
 }
 
 func init() {
+
 	data, err := os.ReadFile("restaurants_data.json")
 	println(err)
 
@@ -43,9 +45,14 @@ func init() {
 	for id, list := range captured {
 		if len(list) > 0 {
 			if r, ok := Restaurants[id]; ok {
+				// **Place restaurant data**
 				r.Name = list[id].Name
 				r.ID = list[id].ID
 				r.Capacity = list[id].Capacity
+
+				// **Load child elements**
+				r.loadTables()
+				r.loadMenu()
 			}
 		}
 	}

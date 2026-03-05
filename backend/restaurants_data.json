@@ -1,23 +1,17 @@
 {
-  "1001": [
-    {
-      "name": "One",
-      "id": 1001,
-      "capacity": 30
-    }
-  ],
-  "1002": [
-    {
-      "name": "Two",
-      "id": 1002,
-      "capacity": 25
-    }
-  ],
-  "3": [
-    {
-      "name": "Three",
-      "100id": 1003,
-      "capacity": 30
-    }
-  ]
+  "1001": {
+    "id": 1001,
+    "name": "One",
+    "capacity": 30
+  },
+  "1002": {
+    "id": 1002,
+    "name": "Two",
+    "capacity": 25
+  },
+  "1003": {
+    "id": 1003,
+    "name": "Three",
+    "capacity": 30
+  }
 }

@@ -30,6 +30,7 @@ func (r *Restaurant) loadMenus(db *sql.DB) error {
 }
 
 func (r *Restaurant) loadTables() error {
+
 	r.Tables = make(map[int]*Table)
 	TableAmount := r.Capacity
 

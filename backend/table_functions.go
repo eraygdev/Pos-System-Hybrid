@@ -146,7 +146,7 @@ func (t *Table) updateTotal(Price float64) error {
 	return nil
 }
 
-func (t *Table) getBill(r *Restaurant) (int, error) {
+func (t *Table) getBill(r *Restaurant) (float64, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -154,7 +154,7 @@ func (t *Table) getBill(r *Restaurant) (int, error) {
 		return 0, fmt.Errorf("Masa %d boş!", t.Number)
 	}
 
-	var total int
+	var total float64
 	for _, ID := range t.Orders {
 		if item, ok := r.Menu[ID]; ok {
 			total += item.Price

@@ -2,11 +2,27 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"os"
 
 	_ "github.com/glebarez/go-sqlite"
 )
 
+func loadFromJSON(filePath string) error {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(data, &Restaurants)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("📂 JSON verisi başarıyla belleğe yüklendi!")
+	return nil
+}
 func MigrationJsonToSql(db *sql.DB, restaurants map[int]*Restaurant) error {
 	for _, r := range Restaurants {
 		res, err := db.Exec("INSERT INTO restaurants (name, capacity) VALUES (?, ?)", r.Name, r.Capacity)
@@ -46,7 +62,8 @@ func initDB() (*sql.DB, error) {
 	CREATE TABLE IF NOT EXISTS restaurants (
 		id INTEGER PRIMARY KEY,
 		name TEXT,
-		capacity INTEGER
+		capacity INTEGER,
+		state BOOLEAN DEFAULT 0
 	);
 	
 	CREATE TABLE IF NOT EXISTS tables (
@@ -57,6 +74,7 @@ func initDB() (*sql.DB, error) {
 		is_busy BOOLEAN DEFAULT 0,
 		guest_count INTEGER DEFAULT 1,
 		total REAL,
+		paid_value INTEGER DEFAULT 0,
 		FOREIGN KEY(restaurant_id) REFERENCES restaurants(id)
 	);
 	

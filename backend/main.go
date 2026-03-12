@@ -16,11 +16,15 @@ func main() {
 		fmt.Println(err)
 	}
 
-	/* Transferring data from JSON to SQL.
-	err3 := MigrationJsonToSql(db, Restaurants)
-	if err3 != nil {
-		fmt.Println(err3)
-	}
+	/*
+		err = loadFromJSON("./restaurants_data.json")
+		if err != nil {
+			fmt.Println("JSON Okuma Hatası:", err)
+		}
+		err3 := MigrationJsonToSql(db, Restaurants)
+		if err3 != nil {
+			fmt.Println(err3)
+		}
 	*/
 
 	resCount := len(Restaurants)

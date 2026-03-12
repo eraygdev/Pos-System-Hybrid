@@ -1,16 +1,27 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func main() {
-	Restaurants = make(map[int]*Restaurant)
-	err := initRestaurants()
-
-	// Check (From AI)
-	if err != nil {
-		fmt.Printf("❌ Yükleme Sırasında Hata: %v\n", err)
-		return
+	db, err2 := initDB()
+	if err2 != nil {
+		fmt.Println(err2)
 	}
+
+	Restaurants = make(map[int]*Restaurant)
+	err := initRestaurants(db)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	/* Transferring data from JSON to SQL.
+	err3 := MigrationJsonToSql(db, Restaurants)
+	if err3 != nil {
+		fmt.Println(err3)
+	}
+	*/
 
 	resCount := len(Restaurants)
 	tableCount := 0
@@ -32,4 +43,5 @@ func main() {
 	} else {
 		fmt.Println("🚀 Sistem kullanıma hazır!")
 	}
+
 }

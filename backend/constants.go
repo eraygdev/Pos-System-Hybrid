@@ -1,7 +1,6 @@
 package main
 
 const (
-	// Default_Number  = 0     // 0
 	Default_WaiterID   = 0     // 0
 	Default_IsBusy     = false // false
 	Default_GuestCount = 0     // 0
@@ -9,6 +8,7 @@ const (
 )
 
 var (
-	Default_Orders = []int(nil)           // []int(nil)
-	Default_Tables = make(map[int]*Table) // []*Table
+	Default_Orders = []int(nil)              // []int(nil)
+	Default_Tables = make(map[int]*Table)    // make(map[int]*Table)
+	Default_Menus  = make(map[int]*MenuItem) // make(map[int]*MenuItem)
 )

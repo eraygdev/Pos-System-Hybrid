@@ -5,9 +5,9 @@ import (
 )
 
 type Restaurant struct {
-	Name     string `json:"name"`
-	ID       int    `json:"id"`
-	Capacity int    `json:"capacity"`
+	Name     string
+	ID       int
+	Capacity int
 	Menu     map[int]*MenuItem
 	Tables   map[int]*Table
 	mu       sync.Mutex
@@ -16,8 +16,10 @@ type Restaurant struct {
 type Table struct {
 	// --- IDENTITY ---
 
-	Number   int // Table ID
-	WaiterID int // Waiter ID
+	ID           int
+	RestaurantID int
+	Number       int // Table ID
+	WaiterID     int // Waiter ID
 
 	// --- STATUS ---
 
@@ -34,20 +36,27 @@ type Table struct {
 	mu sync.Mutex // Thread safety
 }
 
+type ORDER struct {
+	// --- IDENTITY ---
+
+	ID int
+}
+
 type MenuItem struct {
 	// --- IDENTITY ---
 
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	ID           int
+	RestaurantID int
+	Name         string
 
 	// --- DETAILS ---
 
-	Category int `json:"category"`
-	PrepTime int `json:"prep_time"`
-	Price    int `json:"price"`
+	Category int
+	PrepTime int
+	Price    int
 
 	// --- STATUS ---
 
-	Stock    int  `json:"stock"`
-	IsActive bool `json:"is_active"`
+	Stock    int
+	IsActive bool
 }

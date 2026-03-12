@@ -1,12 +1,33 @@
 package main
 
 import (
-	"encoding/json"
+	"database/sql"
 	"fmt"
-	"os"
 )
 
 var Restaurants map[int]*Restaurant
+
+func (r *Restaurant) loadMenus(db *sql.DB) error {
+	if r.Menu == nil {
+		r.Menu = make(map[int]*MenuItem)
+	}
+
+	rows, err := db.Query("SELECT id, restaurant_id, name, category, prep_time, price, stock, is_active FROM menus WHERE restaurant_id = ? ORDER BY category ASC, name ASC", r.ID)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		m := &MenuItem{}
+		if err := rows.Scan(&m.ID, &m.RestaurantID, &m.Name, &m.Category, &m.PrepTime, &m.Price, &m.Stock, &m.IsActive); err != nil {
+			return err
+		}
+		r.Menu[m.ID] = m
+	}
+
+	return rows.Err()
+}
 
 func (r *Restaurant) loadTables() error {
 	r.Tables = make(map[int]*Table)
@@ -26,52 +47,29 @@ func (r *Restaurant) loadTables() error {
 	return nil
 }
 
-func initRestaurants() error {
-	resdata, err := os.ReadFile("restaurants_data.json")
+func initRestaurants(db *sql.DB) error {
+	rows, err := db.Query("SELECT id, name, capacity FROM restaurants ORDER BY id")
 	if err != nil {
 		return err
 	}
-	menudata, err0 := os.ReadFile("menus_data.json")
-	if err0 != nil {
-		return err0
-	}
+	defer rows.Close()
 
-	var captured map[int]*Restaurant
-	err1 := json.Unmarshal(resdata, &captured)
-	if err1 != nil {
-		return err1
-	}
-	var capturedmenu map[int]map[int]*MenuItem
-	err2 := json.Unmarshal(menudata, &capturedmenu)
-	if err2 != nil {
-		return err2
-	}
-
-	for id, rData := range captured {
-		if _, ok := Restaurants[id]; !ok {
-			Restaurants[id] = &Restaurant{
-				ID:     id,
-				Menu:   make(map[int]*MenuItem),
-				Tables: make(map[int]*Table),
-			}
+	for rows.Next() {
+		r := &Restaurant{}
+		if err := rows.Scan(&r.ID, &r.Name, &r.Capacity); err != nil {
+			return err
 		}
+		Restaurants[r.ID] = r
+	}
 
-		r := Restaurants[id]
-		r.Name = rData.Name
-		r.Capacity = rData.Capacity
-
+	for _, r := range Restaurants {
+		if err := r.loadMenus(db); err != nil {
+			return err
+		}
 		if err := r.loadTables(); err != nil {
 			return err
 		}
 	}
 
-	for resid, items := range capturedmenu {
-		if r, ok := Restaurants[resid]; ok {
-			for itemid, item := range items {
-				item.ID = itemid
-				r.Menu[itemid] = item
-			}
-		}
-	}
-	return nil
+	return rows.Err()
 }

@@ -9,48 +9,6 @@ import (
 	_ "github.com/glebarez/go-sqlite"
 )
 
-func loadFromJSON(filePath string) error {
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(data, &Restaurants)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("📂 JSON verisi başarıyla belleğe yüklendi!")
-	return nil
-}
-func MigrationJsonToSql(db *sql.DB, restaurants map[int]*Restaurant) error {
-	for _, r := range Restaurants {
-		res, err := db.Exec("INSERT INTO restaurants (name, capacity) VALUES (?, ?)", r.Name, r.Capacity)
-		if err != nil {
-			return err
-		}
-		resID, _ := res.LastInsertId()
-
-		for _, t := range r.Tables {
-			_, err := db.Exec("INSERT INTO tables (restaurant_id, number, waiter_id, is_busy, guest_count, total) VALUES (?, ?, ?, ?, ?, ?)",
-				resID, t.Number, t.WaiterID, t.IsBusy, t.GuestCount, t.Total)
-			if err != nil {
-				return err
-			}
-		}
-
-		for _, m := range r.Menu {
-			_, err := db.Exec("INSERT INTO menus (restaurant_id, name, category, prep_time, price, stock, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)",
-				resID, m.Name, m.Category, m.PrepTime, m.Price, m.Stock, m.IsActive)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	fmt.Println("✅ Json'dan SQL'e veri transferi başarılı!")
-	return nil
-}
 
 func initDB() (*sql.DB, error) {
 	db, err := sql.Open("sqlite", "./pos.db")
@@ -59,7 +17,7 @@ func initDB() (*sql.DB, error) {
 	}
 
 	createTables := `
-	CREATE TABLE IF NOT EXISTS restaurants (
+	CREATE TABLE IF NOT EXISTS restaurants (	
 		id INTEGER PRIMARY KEY,
 		name TEXT,
 		capacity INTEGER,
@@ -103,3 +61,58 @@ func initDB() (*sql.DB, error) {
 	_, err = db.Exec(createTables)
 	return db, err
 }
+
+//======================================================================>> JSON Functions 
+func loadFromJSON(filePath string) error {
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(data, &Restaurants)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("📂 JSON verisi başarıyla belleğe yüklendi!")
+	return nil
+}
+func MigrationJsonToSql(db *sql.DB, restaurants map[int]*Restaurant) error {
+	tx, err := db.Begin() // İşlemi başlat
+	if err != nil {
+    	return err
+	}
+	defer tx.Rollback()
+
+	for _, r := range Restaurants {
+		res, err := tx.Exec("INSERT INTO restaurants (name, capacity) VALUES (?, ?)", r.Name, r.Capacity)
+		if err != nil {
+			return err
+		}
+		resID, _ := res.LastInsertId()
+
+		for _, t := range r.Tables {
+			_, err := tx.Exec("INSERT INTO tables (restaurant_id, number, waiter_id, is_busy, guest_count, total) VALUES (?, ?, ?, ?, ?, ?)",
+				resID, t.Number, t.WaiterID, t.IsBusy, t.GuestCount, t.Total)
+			if err != nil {
+				return err
+			}
+		}
+
+		for _, m := range r.Menu {
+			_, err := tx.Exec("INSERT INTO menus (restaurant_id, name, category, prep_time, price, stock, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)",
+				resID, m.Name, m.Category, m.PrepTime, m.Price, m.Stock, m.IsActive)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	
+	if err := tx.Commit(); err != nil {
+        return err
+    }
+
+	fmt.Println("✅ Json'dan SQL'e veri transferi başarılı!")
+	return nil
+}
+//-------------------------------------------------------------------->> JSON Functions 

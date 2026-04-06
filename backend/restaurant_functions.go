@@ -49,7 +49,7 @@ func (r *Restaurant) loadTables() error {
 }
 
 func initRestaurants(db *sql.DB) error {
-	rows, err := db.Query("SELECT id, name, capacity FROM restaurants ORDER BY id")
+	rows, err := db.Query("SELECT id, name, capacity, state FROM restaurants ORDER BY id")
 	if err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func initRestaurants(db *sql.DB) error {
 
 	for rows.Next() {
 		r := &Restaurant{}
-		if err := rows.Scan(&r.ID, &r.Name, &r.Capacity); err != nil {
+		if err := rows.Scan(&r.ID, &r.Name, &r.Capacity, &r.STATE); err != nil {
 			return err
 		}
 		Restaurants[r.ID] = r

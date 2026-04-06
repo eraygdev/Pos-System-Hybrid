@@ -4,28 +4,25 @@ import (
 	"fmt"
 )
 
-func main() {
-	db, err2 := initDB()
-	if err2 != nil {
-		fmt.Println(err2)
-	}
 
-	Restaurants = make(map[int]*Restaurant)
-	err := initRestaurants(db)
+func main() {
+	db, err := initDB()
 	if err != nil {
 		fmt.Println(err)
 	}
+	
+    /* Migration JSON --> sql
+    if err := loadFromJSON("./restaurants_data.json"); err != nil {
+		fmt.Println("JSON Okuma Hatası:", err)
+	}
+	if err := MigrationJsonToSql(db, Restaurants); err != nil {
+		fmt.Println(err)
+	} */
 
-	/*
-		err = loadFromJSON("./restaurants_data.json")
-		if err != nil {
-			fmt.Println("JSON Okuma Hatası:", err)
-		}
-		err3 := MigrationJsonToSql(db, Restaurants)
-		if err3 != nil {
-			fmt.Println(err3)
-		}
-	*/
+	Restaurants = make(map[int]*Restaurant)
+	if err := initRestaurants(db); err != nil {
+		fmt.Println(err)
+	}
 
 	resCount := len(Restaurants)
 	tableCount := 0

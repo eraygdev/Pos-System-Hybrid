@@ -149,7 +149,7 @@ func seeRestaurants() error {
 	fmt.Println("===========================================================")
 	return nil
 }
-func seeOrderOf(id int) error {
+func seeOrdersOf(id int) error {
 	db, err := getDB()
 	if err != nil {
 		return err
@@ -235,12 +235,61 @@ func seeOrders() error {
 			ID:    id,
 			Label: text,
 			Action: func() error {
-				return seeOrderOf(id)
+				return seeOrdersOf(id)
 			},
 		}
 		options = append(options, newOption)
 	}
 	ShowMenu("Which restaurant's orders should be displayed?", options)
+	return nil
+}
+func seeMenuOf(id int) error {
+	db, err := getDB()
+	if err != nil {
+		return err
+	}
+
+	query := `
+        SELECT 
+            id, 
+            name, 
+            price, 
+            stock, 
+            prep_time,
+            is_active
+        FROM menus 
+        WHERE restaurant_id = ?
+        ORDER BY category, name
+    `
+
+	rows, err := db.Query(query, id)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	fmt.Println("======================================================================")
+	fmt.Printf("%-4s | %-20s | %-10s | %-7s | %-8s | %-8s\n", "ID", "ITEM NAME", "PRICE", "STOCK", "TIME", "STATUS")
+	fmt.Println("----------------------------------------------------------------------")
+
+	for rows.Next() {
+		var id, stock, prepTime int
+		var name string
+		var price float64
+		var isActive bool
+
+		if err := rows.Scan(&id, &name, &price, &stock, &prepTime, &isActive); err != nil {
+			return err
+		}
+
+		status := "ACTIVE"
+		if !isActive {
+			status = "PASSIVE"
+		}
+
+		fmt.Printf("%-4d | %-20s | %-10.2f | %-7d | %-8d | %-8s\n", id, name, price, stock, prepTime, status)
+	}
+	fmt.Println("======================================================================")
 	return nil
 }
 func seeMenus() error {
@@ -251,20 +300,31 @@ func seeMenus() error {
 		return err
 	}
 
-	rows, err := db.Query("SELECT id, name, capacity, state FROM restaurants ORDER BY id")
+	query := `
+		SELECT
+			r.id, r.name, r.state, COUNT(m.id)
+		FROM restaurants r
+		LEFT JOIN menus m ON r.id = m.restaurant_id 
+		GROUP BY r.id, r.name
+		ORDER BY r.id
+	`
+
+	rows, err := db.Query(query)
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
-	fmt.Println("==================================================")
-	fmt.Printf("%-4s: %-20s | %-8s | %-10s\n", "ID", "NAME", "CAPACITY", "STATE")
-	fmt.Println("--------------------------------------------------")
+	fmt.Println("===========================================================")
+	fmt.Printf("%-4s: %-20s | %-7s | %-10s\n", "ID", "NAME", "MENU", "STATE")
+	fmt.Printf("%-4s: %-20s | %-7s | %-10s\n", "  ", "    ", "ITEMS", "    ")
+	fmt.Println("-----------------------------------------------------------")
 	for rows.Next() {
-		var id, capacity int
+		var id, mCount int
 		var name string
 		var state bool
 
-		if err := rows.Scan(&id, &name, &capacity, &state); err != nil {
+		if err := rows.Scan(&id, &name, &state, &mCount); err != nil {
 			return err
 		}
 
@@ -273,19 +333,17 @@ func seeMenus() error {
 			stateText = "OCCUPIED"
 		}
 
-		text := fmt.Sprintf(": %-20s | %-8d | %-10s", name, capacity, stateText)
+		text := fmt.Sprintf(": %-20s | %-7d | %-10s", name, mCount, stateText)
 		newOption := MenuOption{
 			ID:    id,
 			Label: text,
 			Action: func() error {
-				return seeOrderOf(id)
+				return seeMenuOf(id)
 			},
 		}
 		options = append(options, newOption)
 	}
-	ShowMenu("Which restaurant's orders should be displayed?", options)
-
-	rows.Close()
+	ShowMenu("Which restaurant's menu should be displayed?", options)
 	return nil
 }
 func seeTempMemory() error {

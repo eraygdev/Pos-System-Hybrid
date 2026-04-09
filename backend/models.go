@@ -61,3 +61,8 @@ type MenuItem struct {
 	Stock    int  `json:"stock"`
 	IsActive bool `json:"is_active"`
 }
+
+type MenuOption struct {
+	Label  string
+	Action func() error
+}

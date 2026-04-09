@@ -9,7 +9,7 @@ import (
 	_ "github.com/glebarez/go-sqlite"
 )
 
-//======================================================================>> sql.DB Functions 
+// ======================================================================>> sql.DB Functions
 func initDB() (*sql.DB, error) {
 	db, err := sql.Open("sqlite", "./pos.db")
 	if err != nil {
@@ -61,9 +61,10 @@ func initDB() (*sql.DB, error) {
 	_, err = db.Exec(createTables)
 	return db, err
 }
-//---------------------------------------------------------------------->> JSON Functions 
 
-//======================================================================>> JSON Functions 
+//---------------------------------------------------------------------->> JSON Functions
+
+// ======================================================================>> JSON Functions
 func loadFromJSON(filePath string) error {
 	data, err := os.ReadFile(filePath)
 	if err != nil {
@@ -81,7 +82,7 @@ func loadFromJSON(filePath string) error {
 func MigrationJsonToSql(db *sql.DB, restaurants map[int]*Restaurant) error {
 	tx, err := db.Begin() // İşlemi başlat
 	if err != nil {
-    	return err
+		return err
 	}
 	defer tx.Rollback()
 
@@ -110,10 +111,11 @@ func MigrationJsonToSql(db *sql.DB, restaurants map[int]*Restaurant) error {
 	}
 
 	if err := tx.Commit(); err != nil {
-        return err
-    }
+		return err
+	}
 
 	fmt.Println("✅ Json'dan SQL'e veri transferi başarılı!")
 	return nil
 }
-//---------------------------------------------------------------------->> JSON Functions 
+
+//---------------------------------------------------------------------->> JSON Functions

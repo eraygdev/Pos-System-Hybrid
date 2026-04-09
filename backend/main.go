@@ -2,22 +2,24 @@ package main
 
 import (
 	"fmt"
+	"pos_system/terminal_test"
 )
 
-
 func main() {
+	terminal_test.InitCmd()
+
 	db, err := initDB()
 	if err != nil {
 		fmt.Println(err)
 	}
-	
-    /* Migration JSON --> sql
-    if err := loadFromJSON("./restaurants_data.json"); err != nil {
-		fmt.Println("JSON Okuma Hatası:", err)
-	}
-	if err := MigrationJsonToSql(db, Restaurants); err != nil {
-		fmt.Println(err)
-	} */
+
+	/* Migration JSON --> sql
+	    if err := loadFromJSON("./restaurants_data.json"); err != nil {
+			fmt.Println("JSON Okuma Hatası:", err)
+		}
+		if err := MigrationJsonToSql(db, Restaurants); err != nil {
+			fmt.Println(err)
+		} */
 
 	Restaurants = make(map[int]*Restaurant)
 	if err := initRestaurants(db); err != nil {

@@ -6,7 +6,9 @@ import (
 )
 
 func main() {
+	//Terminal Menu
 	terminal_test.InitCmd()
+	return
 
 	db, err := initDB()
 	if err != nil {

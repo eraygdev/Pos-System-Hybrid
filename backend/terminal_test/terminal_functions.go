@@ -43,12 +43,13 @@ func y_or_n() bool {
 	}
 }
 
-func ShowMenu(title string, options []MenuOption) error {
+func ShowMenu(title string, Q string, options []MenuOption) error {
 	for {
+		fmt.Print("\n" + title)
 		for _, opt := range options {
 			fmt.Printf("|%d| %s\n", opt.ID, opt.Label)
 		}
-		fmt.Printf("%s (-1 to go back): ", title)
+		fmt.Printf("%s (-1 to go back): ", Q)
 
 		val, err := getInputInt()
 		if err != nil {
@@ -56,7 +57,6 @@ func ShowMenu(title string, options []MenuOption) error {
 		}
 
 		if val == -1 {
-			fmt.Println()
 			return nil
 		}
 
@@ -114,10 +114,11 @@ func seeRestaurants() error {
 
 	query := `
 		SELECT
-			r.id, r.name, r.capacity, r.state, COUNT(t.id)
+			r.id, r.name, r.capacity, r.state, COUNT(DISTINCT t.id), count(DISTINCT m.id)
 		FROM restaurants r
 		LEFT JOIN tables t ON r.id = t.restaurant_id 
-		GROUP BY r.id, r.name
+		LEFT JOIN menus m ON r.id = m.restaurant_id
+		GROUP BY r.id, r.name, r.capacity, r.state
 		ORDER BY r.id
 	`
 
@@ -127,26 +128,27 @@ func seeRestaurants() error {
 	}
 	defer rows.Close()
 
-	fmt.Println("===========================================================")
-	fmt.Printf("%-4s: %-20s | %-8s | %-6s | %-10s\n", "ID", "NAME", "CAPACITY", "TABLES", "STATE")
-	fmt.Println("-----------------------------------------------------------")
+	fmt.Println("===============================================================")
+	fmt.Printf("%-4s: %-20s | %-8s | %-6s | %-5s | %-10s\n", "ID", "NAME", "CAPACITY", "TABLES", "MENU", "STATE")
+	fmt.Printf("%-4s: %-20s | %-8s | %-6s | %-5s | %-10s\n", "  ", "    ", "        ", "     ", "ITEMS", "     ")
+	fmt.Println("---------------------------------------------------------------")
 	for rows.Next() {
-		var id, capacity, tCount int
+		var id, capacity, tCount, mItems int
 		var name string
 		var state bool
 
-		if err := rows.Scan(&id, &name, &capacity, &state, &tCount); err != nil {
+		if err := rows.Scan(&id, &name, &capacity, &state, &tCount, &mItems); err != nil {
 			return err
 		}
 
-		stateText := "FREE"
+		stateText := "OPEN"
 		if state {
-			stateText = "OCCUPIED"
+			stateText = "CLOSED"
 		}
 
-		fmt.Printf(": %-20s | %-8d | %-6d | %-10s", name, capacity, tCount, stateText)
+		fmt.Printf("%-4d: %-20s | %-8d | %-6d | %-5d | %-10s\n", id, name, capacity, tCount, mItems, stateText)
 	}
-	fmt.Println("===========================================================")
+	fmt.Println("===============================================================")
 	return nil
 }
 func seeOrdersOf(id int) error {
@@ -190,7 +192,7 @@ func seeOrdersOf(id int) error {
 	fmt.Println("==============================================================")
 	return nil
 }
-func seeOrders() error {
+func seeOrdersFromRes() error {
 	options := []MenuOption{}
 
 	db, err := getDB()
@@ -213,9 +215,10 @@ func seeOrders() error {
 	}
 	defer rows.Close()
 
-	fmt.Println("===========================================================")
-	fmt.Printf("%-4s: %-20s | %-8s | %-6s | %-10s\n", "ID", "NAME", "CAPACITY", "TABLES", "STATE")
-	fmt.Println("-----------------------------------------------------------")
+	title := "========================================================\n" +
+		fmt.Sprintf("%-4s: %-20s | %-8s | %-6s | %-10s\n", "ID", "NAME", "CAPACITY", "TABLES", "STATE") +
+		"--------------------------------------------------------\n"
+
 	for rows.Next() {
 		var id, capacity, tCount int
 		var name string
@@ -240,7 +243,7 @@ func seeOrders() error {
 		}
 		options = append(options, newOption)
 	}
-	ShowMenu("Which restaurant's orders should be displayed?", options)
+	ShowMenu(title, "Which restaurant's orders should be displayed?", options)
 	return nil
 }
 func seeMenuOf(id int) error {
@@ -292,7 +295,7 @@ func seeMenuOf(id int) error {
 	fmt.Println("======================================================================")
 	return nil
 }
-func seeMenus() error {
+func seeMenusFromRes() error {
 	options := []MenuOption{}
 
 	db, err := getDB()
@@ -315,10 +318,11 @@ func seeMenus() error {
 	}
 	defer rows.Close()
 
-	fmt.Println("===========================================================")
-	fmt.Printf("%-4s: %-20s | %-7s | %-10s\n", "ID", "NAME", "MENU", "STATE")
-	fmt.Printf("%-4s: %-20s | %-7s | %-10s\n", "  ", "    ", "ITEMS", "    ")
-	fmt.Println("-----------------------------------------------------------")
+	title := "===============================================\n" +
+		fmt.Sprintf("%-4s: %-20s | %-7s | %-10s\n", "ID", "NAME", "MENU", "STATE") +
+		fmt.Sprintf("%-4s: %-20s | %-7s | %-10s\n", "  ", "    ", "ITEMS", "    ") +
+		"-----------------------------------------------\n"
+
 	for rows.Next() {
 		var id, mCount int
 		var name string
@@ -343,17 +347,17 @@ func seeMenus() error {
 		}
 		options = append(options, newOption)
 	}
-	ShowMenu("Which restaurant's menu should be displayed?", options)
+	ShowMenu(title, "Which restaurant's menu should be displayed?", options)
 	return nil
 }
 func seeTempMemory() error {
 	options := []MenuOption{
 		{1, "restaurants", seeRestaurants},
-		{2, "orders", seeOrders},
-		{3, "menus", seeMenus},
+		{2, "orders", seeOrdersFromRes},
+		{3, "menus", seeMenusFromRes},
 	}
 
-	ShowMenu("Which one would you like to view information about?", options)
+	ShowMenu("", "Which one would you like to view information about?", options)
 
 	return nil
 }
@@ -378,7 +382,7 @@ func seeDetails() error {
 		{2, "database", seeDB},
 	}
 
-	ShowMenu("Which records would you like to view?", options)
+	ShowMenu("", "Which records would you like to view?", options)
 
 	return nil
 }
